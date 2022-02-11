@@ -18,6 +18,14 @@ public class Config {
         this.defaultFile = defaultFile;
     }
 
+    public static Config getConfig(Class<?> mainClass, File configFile, String defaultFile) {
+        Config config = new Config(mainClass, configFile, defaultFile);
+        if (config.loadConfig()) {
+            return config;
+        }
+        return null;
+    }
+
     public boolean loadConfig() {
         if (!configFile.getParentFile().exists()) {
             configFile.getParentFile().mkdirs();
