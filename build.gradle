@@ -1,0 +1,19 @@
+plugins {
+    id 'java'
+}
+
+group 'xyz.novaserver'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation('net.dv8tion:JDA:5.0.0-alpha.5') {
+        exclude module: 'opus-java'
+    }
+    implementation 'org.spongepowered:configurate-yaml:4.1.2'
+    implementation 'ch.qos.logback:logback-classic:1.2.10'
+    implementation("com.google.guava:guava:31.0.1-jre")
+}
