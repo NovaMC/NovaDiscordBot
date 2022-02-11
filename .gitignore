@@ -66,3 +66,6 @@ gradle-app.setting
 
 ### Gradle Patch ###
 **/build/
+
+# Ignore config file
+/config.yml
