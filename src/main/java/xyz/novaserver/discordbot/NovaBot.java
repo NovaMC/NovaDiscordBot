@@ -149,7 +149,7 @@ public class NovaBot implements EventListener {
                 });
 
                 jda.getPresence().setActivity(Activity.watching("Nova Network " + users.size() + "/" + totalCount));
-            }, 5, 60 * 5, TimeUnit.SECONDS);
+            }, 5, 60 * 20, TimeUnit.SECONDS);
         }
     }
 
