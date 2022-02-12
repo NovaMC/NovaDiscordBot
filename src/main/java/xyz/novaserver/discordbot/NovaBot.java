@@ -84,7 +84,7 @@ public class NovaBot implements EventListener {
                     .setChunkingFilter(ChunkingFilter.ALL)
                     .setMemberCachePolicy(MemberCachePolicy.ALL)
                     .enableIntents(GatewayIntent.GUILD_MEMBERS)
-                    .setStatus(OnlineStatus.IDLE)
+                    .setStatus(OnlineStatus.DO_NOT_DISTURB)
                     .setActivity(Activity.playing("Starting up..."))
                     .addEventListeners(this,
                             new CommonRolesHandler(this),
@@ -137,7 +137,7 @@ public class NovaBot implements EventListener {
     @Override
     public void onEvent(@NotNull GenericEvent event) {
         if (event instanceof ReadyEvent) {
-            jda.getPresence().setPresence(OnlineStatus.ONLINE, Activity.watching("Nova Network"));
+            jda.getPresence().setPresence(OnlineStatus.IDLE, Activity.watching("Nova Network"));
 
             threadPool.scheduleAtFixedRate(() -> {
                 AtomicInteger totalCount = new AtomicInteger();
