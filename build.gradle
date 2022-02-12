@@ -18,3 +18,13 @@ dependencies {
     implementation 'ch.qos.logback:logback-classic:1.2.10'
     implementation("com.google.guava:guava:31.0.1-jre")
 }
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'xyz.novaserver.discordbot.NovaBot'
+    }
+}
+
+artifacts {
+    archives shadowJar
+}
