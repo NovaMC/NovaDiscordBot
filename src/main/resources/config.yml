@@ -6,17 +6,17 @@ bot-token: ""
 # Might need to add in server here idk
 synced-roles:
   admin:
-    - 799829137459511296 #network admin role)
-    - 940939854081064997 #mc admin role)
-    - 940909881240715275 #r6 admin role)
+    - 000000000000000000 #network admin role
+    - 000000000000000000 #mc admin role
+    - 000000000000000000 #r6 admin role
   moderator:
-    - 799829302043607080 #network moderator role
-    - 940939854081064996 #mc moderator role
-    - 940910500265459712 #r6 moderator role
+    - 000000000000000000 #network moderator role
+    - 000000000000000000 #mc moderator role
+    - 000000000000000000 #r6 moderator role
 
 # Roles given to people in the main server for being in sub-servers
-subserver-roles:
-  main-server: network
+subguild-roles:
+  main-guild: 000000000000000000 # guild id of main server (network)
   # Format: server-name: main-server-role-id
   role-map:
     minecraft: 0000000000000000
@@ -24,35 +24,35 @@ subserver-roles:
 
 guilds:
   network:
-    guild-id: 597208594605146113
+    guild-id: 0000000000000000
     # Give a set of roles to people with specific roles
     common-roles:
       staff:
         roles-to-give:
-          - 0000000000000 # Staff
+          - 0000000000000000 # Staff
         role-list:
-          - 0000000000000 # Owner
-          - 0000000000000 # Admin
-          - 0000000000000 # Mod
+          - 0000000000000000 # Owner
+          - 0000000000000000 # Admin
+          - 0000000000000000 # Mod
   minecraft:
-    guild-id: 597208594605146113
+    guild-id: 0000000000000000
     # Give a set of roles to people with specific roles
     common-roles:
       staff:
         roles-to-give:
-          - 0000000000000 # Staff
+          - 0000000000000000 # Staff
         role-list:
-          - 0000000000000 # Owner
-          - 0000000000000 # Admin
-          - 0000000000000 # Mod
+          - 0000000000000000 # Owner
+          - 0000000000000000 # Admin
+          - 0000000000000000 # Mod
   rainbow:
-    guild-id: 597208594605146113
+    guild-id: 0000000000000000
     # Give a set of roles to people with specific roles
     common-roles:
       staff:
         roles-to-give:
-          - 0000000000000 # Staff
+          - 0000000000000000 # Staff
         role-list:
-          - 0000000000000 # Owner
-          - 0000000000000 # Admin
-          - 0000000000000 # Mod
+          - 0000000000000000 # Owner
+          - 0000000000000000 # Admin
+          - 0000000000000000 # Mod

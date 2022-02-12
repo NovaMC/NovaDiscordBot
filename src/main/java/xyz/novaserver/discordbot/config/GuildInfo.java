@@ -3,39 +3,44 @@ package xyz.novaserver.discordbot.config;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GuildInfo {
     private final String guildKey;
     private final long guildID;
-    private final Map<String, CommonRoles> commonRolesMap = new HashMap<>();
+    private final List<CommonRoleSet> commonRoleSets = new ArrayList<>();
 
     public GuildInfo(ConfigurationNode configNode) throws SerializationException {
         guildKey = (String) configNode.key();
         guildID = configNode.node("guild-id").getLong();
         for (ConfigurationNode commonNode : configNode.node("common-roles").childrenMap().values()) {
             String key = (String) commonNode.key();
-            commonRolesMap.put(key, new CommonRoles(key,
+            commonRoleSets.add(new CommonRoleSet(key,
                     commonNode.node("roles-to-give").getList(Long.class),
                     commonNode.node("role-list").getList(Long.class)
             ));
         }
     }
 
+    public String getGuildKey() {
+        return guildKey;
+    }
+
     public long getGuildID() {
         return guildID;
     }
 
-    public Map<String, CommonRoles> getCommonRoles() {
-        return commonRolesMap;
+    public List<CommonRoleSet> getCommonRoleSets() {
+        return commonRoleSets;
     }
 
-    public static class CommonRoles {
+    public static class CommonRoleSet {
         private final String setName;
         private final List<Long> rolesToGive = new ArrayList<>();
         private final List<Long> roleList = new ArrayList<>();
 
-        private CommonRoles(String setName, List<Long> rolesToGive, List<Long> roleList) {
+        private CommonRoleSet(String setName, List<Long> rolesToGive, List<Long> roleList) {
             this.setName = setName;
             this.rolesToGive.addAll(rolesToGive);
             this.roleList.addAll(roleList);
