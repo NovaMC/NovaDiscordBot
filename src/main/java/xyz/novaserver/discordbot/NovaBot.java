@@ -11,20 +11,16 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.jetbrains.annotations.NotNull;
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.configurate.ConfigurationNode;
-import org.spongepowered.configurate.serialize.SerializationException;
-import xyz.novaserver.discordbot.config.Config;
-import xyz.novaserver.discordbot.config.GuildInfo;
-import xyz.novaserver.discordbot.config.SubGuildRoles;
-import xyz.novaserver.discordbot.config.SyncedRoleSet;
-import xyz.novaserver.discordbot.listener.CommonRolesHandler;
-import xyz.novaserver.discordbot.listener.RoleSyncHandler;
-import xyz.novaserver.discordbot.listener.SubGuildRolesHandler;
+import xyz.novaserver.discordbot.services.Service;
+import xyz.novaserver.discordbot.util.Config;
 
 import javax.security.auth.login.LoginException;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -37,13 +33,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class NovaBot implements EventListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(NovaBot.class);
 
-    private final Map<Long, GuildInfo> GUILD_INFO_MAP = new HashMap<>();
-    private final Set<SyncedRoleSet> SYNCED_ROLES = new HashSet<>();
-    private final SubGuildRoles SUBGUILD_ROLES;
-
     private final ConfigurationNode CONFIG;
     private final ScheduledExecutorService threadPool;
-    private JDA jda;
+    private final JDA jda;
+
+    private final Map<String, Service> serviceMap = new HashMap<>();
 
     public static void main(String[] args) {
         // Create and load configuration file
@@ -59,79 +53,57 @@ public class NovaBot implements EventListener {
         this.CONFIG = config;
         this.threadPool = Executors.newScheduledThreadPool(5);
 
-        // Load guilds from config
-        getConfig().node("guilds").childrenMap().values().forEach(node -> {
-            try {
-                GUILD_INFO_MAP.put(node.node("guild-id").getLong(), new GuildInfo(node));
-            } catch (SerializationException e) {
-                exitWithError("Failed to load guilds from config!", e);
-            }
-        });
-
-        getConfig().node("synced-roles").childrenMap().values().forEach(node -> {
-            try {
-                SYNCED_ROLES.add(new SyncedRoleSet(node));
-            } catch (SerializationException e) {
-                LOGGER.error("Failed to load synced roles!", e);
-            }
-        });
-
-        SUBGUILD_ROLES = new SubGuildRoles(getConfig().node("subguild-roles"));
-
         // Login and register bot
+        JDA tempJda;
         try {
-            jda = JDABuilder.createDefault(getConfig().node("bot-token").getString())
+            tempJda = JDABuilder.createDefault(getConfig().node("bot-token").getString())
                     .setChunkingFilter(ChunkingFilter.ALL)
                     .setMemberCachePolicy(MemberCachePolicy.ALL)
                     .enableIntents(GatewayIntent.GUILD_MEMBERS)
                     .setStatus(OnlineStatus.DO_NOT_DISTURB)
                     .setActivity(Activity.playing("Starting up..."))
-                    .addEventListeners(this,
-                            new CommonRolesHandler(this),
-                            new RoleSyncHandler(this),
-                            new SubGuildRolesHandler(this))
+                    .addEventListeners(this)
                     .build();
         } catch (LoginException e) {
+            tempJda = null;
             exitWithError("Failed to login to the bot. Did you change the bot token?", e);
         }
-    }
+        this.jda = tempJda;
 
-    public boolean hasGuildInfo(Long guildID) {
-        return GUILD_INFO_MAP.containsKey(guildID);
-    }
-
-    public GuildInfo getGuildInfo(Long guildID) {
-        return GUILD_INFO_MAP.get(guildID);
-    }
-
-    public boolean hasGuildInfo(String guildKey) {
-        for (GuildInfo guildInfo : GUILD_INFO_MAP.values()) {
-            if (guildKey.equals(guildInfo.getGuildKey())) {
-                return true;
+        // Load services
+        try {
+            Reflections reflections = new Reflections("xyz.novaserver.discordbot.services");
+            Set<Class<? extends Service>> subTypes = reflections.getSubTypesOf(Service.class);
+            for (Class<? extends Service> clazz : subTypes) {
+                if (clazz.getSimpleName().equals("Service")) continue;
+                String serviceName = clazz.getSimpleName().toLowerCase().replace("service", "");
+                if (getConfig().node("enable-features", serviceName).getBoolean()) {
+                    serviceMap.put(serviceName, clazz.getDeclaredConstructor(NovaBot.class).newInstance(this));
+                }
             }
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            exitWithError("Failed to load services!", e);
         }
-        return false;
+
+        // Register services
+        serviceMap.values().forEach(Service::register);
+        LOGGER.info("Registered " + serviceMap.size() + " service(s)!");
     }
 
-    public GuildInfo getGuildInfo(String guildKey) {
-        for (GuildInfo guildInfo : GUILD_INFO_MAP.values()) {
-            if (guildKey.equals(guildInfo.getGuildKey())) {
-                return guildInfo;
-            }
-        }
-        return null;
+    public ScheduledExecutorService getThreadPool() {
+        return threadPool;
     }
 
-    public Set<SyncedRoleSet> getSyncedRoles() {
-        return SYNCED_ROLES;
-    }
-
-    public SubGuildRoles getSubGuildRoles() {
-        return SUBGUILD_ROLES;
+    public JDA getJda() {
+        return jda;
     }
 
     public ConfigurationNode getConfig() {
         return CONFIG;
+    }
+
+    public Service getService(String name) {
+        return serviceMap.get(name);
     }
 
     @Override
@@ -153,7 +125,7 @@ public class NovaBot implements EventListener {
         }
     }
 
-    public static void exitWithError(String s, Exception e) {
+    private static void exitWithError(String s, Exception e) {
         LOGGER.error(s, e);
         System.exit(1);
     }

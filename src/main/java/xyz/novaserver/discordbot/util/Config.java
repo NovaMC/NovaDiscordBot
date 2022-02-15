@@ -1,4 +1,4 @@
-package xyz.novaserver.discordbot.config;
+package xyz.novaserver.discordbot.util;
 
 import com.google.common.io.ByteStreams;
 import org.spongepowered.configurate.ConfigurationNode;

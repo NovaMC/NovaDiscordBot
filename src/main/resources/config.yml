@@ -1,6 +1,9 @@
 # Token for the bot to log into
 bot-token: ""
 
+enable-features:
+  roles: true
+
 # Groups of roles to keep synced with members across servers
 # Example: User A is given admin role in Server A. User A joins/is already in Server B. User A is given admin role in Server B.
 # Might need to add in server here idk

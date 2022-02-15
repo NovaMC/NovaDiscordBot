@@ -1,4 +1,4 @@
-package xyz.novaserver.discordbot.listener;
+package xyz.novaserver.discordbot.services.roles.listener;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -9,16 +9,16 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.novaserver.discordbot.NovaBot;
-import xyz.novaserver.discordbot.config.GuildInfo;
+import xyz.novaserver.discordbot.services.RolesService;
+import xyz.novaserver.discordbot.services.roles.config.GuildInfo;
 
 public class CommonRolesHandler extends ListenerAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonRolesHandler.class);
 
-    private final NovaBot novaBot;
+    private final RolesService rolesService;
 
-    public CommonRolesHandler(NovaBot novaBot) {
-        this.novaBot = novaBot;
+    public CommonRolesHandler(RolesService rolesService) {
+        this.rolesService = rolesService;
     }
 
     @Override
@@ -26,10 +26,10 @@ public class CommonRolesHandler extends ListenerAdapter {
         Guild guild = event.getGuild();
 
         // Return if guild info doesn't exist
-        if (!novaBot.hasGuildInfo(guild.getIdLong())) {
+        if (!rolesService.hasGuildInfo(guild.getIdLong())) {
             return;
         }
-        GuildInfo guildInfo = novaBot.getGuildInfo(guild.getIdLong());
+        GuildInfo guildInfo = rolesService.getGuildInfo(guild.getIdLong());
 
         event.getRoles().forEach(eventRole -> {
             // Loop through common role groups
@@ -56,10 +56,10 @@ public class CommonRolesHandler extends ListenerAdapter {
         Member member = event.getMember();
 
         // Return if guild info doesn't exist
-        if (!novaBot.hasGuildInfo(guild.getIdLong())) {
+        if (!rolesService.hasGuildInfo(guild.getIdLong())) {
             return;
         }
-        GuildInfo guildInfo = novaBot.getGuildInfo(guild.getIdLong());
+        GuildInfo guildInfo = rolesService.getGuildInfo(guild.getIdLong());
 
         event.getRoles().forEach(eventRole -> {
             long eventRoleID = eventRole.getIdLong();
@@ -74,7 +74,7 @@ public class CommonRolesHandler extends ListenerAdapter {
                         if (roleFromList != null && member.getRoles().contains(roleFromList)) {
                             guild.addRoleToMember(member, eventRole).queue();
                             LOGGER.info("Added role to member because of removed common role! M:" + event.getMember().getEffectiveName()
-                                    + " R:" + eventRole.getName() + "LR:" + roleFromList.getName());
+                                    + " R:" + eventRole.getName() + " LR:" + roleFromList.getName());
                         }
                     });
                 }

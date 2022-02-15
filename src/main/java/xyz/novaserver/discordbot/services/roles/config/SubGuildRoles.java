@@ -1,4 +1,4 @@
-package xyz.novaserver.discordbot.config;
+package xyz.novaserver.discordbot.services.roles.config;
 
 import org.spongepowered.configurate.ConfigurationNode;
 

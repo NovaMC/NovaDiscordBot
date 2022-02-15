@@ -1,4 +1,4 @@
-package xyz.novaserver.discordbot.listener;
+package xyz.novaserver.discordbot.services.roles.listener;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.novaserver.discordbot.NovaBot;
+import xyz.novaserver.discordbot.services.RolesService;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,10 +21,10 @@ import java.util.Set;
 public class RoleSyncHandler extends ListenerAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoleSyncHandler.class);
 
-    private final NovaBot novaBot;
+    private final RolesService rolesService;
 
-    public RoleSyncHandler(NovaBot novaBot) {
-        this.novaBot = novaBot;
+    public RoleSyncHandler(RolesService rolesService) {
+        this.rolesService = rolesService;
     }
 
     @Override
@@ -35,7 +35,7 @@ public class RoleSyncHandler extends ListenerAdapter {
         Set<String> hasRoleKeys = new HashSet<>();
 
         userGuilds.remove(eventGuild);
-        userGuilds.forEach(userGuild -> novaBot.getSyncedRoles().forEach(syncedRoleSet -> {
+        userGuilds.forEach(userGuild -> rolesService.getSyncedRoles().forEach(syncedRoleSet -> {
             syncedRoleSet.getRoles().forEach(otherRoleID -> {
                 Member otherMember = userGuild.getMember(event.getUser());
                 Role otherRole = event.getJDA().getRoleById(otherRoleID);
@@ -45,7 +45,7 @@ public class RoleSyncHandler extends ListenerAdapter {
             });
         }));
 
-        novaBot.getSyncedRoles().forEach(syncedRoleSet -> {
+        rolesService.getSyncedRoles().forEach(syncedRoleSet -> {
             if (hasRoleKeys.contains(syncedRoleSet.getRoleKey())) {
                 syncedRoleSet.getRoles().forEach(roleID -> {
                     Role role = event.getJDA().getRoleById(roleID);
@@ -64,7 +64,7 @@ public class RoleSyncHandler extends ListenerAdapter {
         User user = event.getUser();
         List<Guild> userGuilds = user.getMutualGuilds();
 
-        event.getRoles().forEach(eventRole -> novaBot.getSyncedRoles().forEach(syncedRoleSet -> {
+        event.getRoles().forEach(eventRole -> rolesService.getSyncedRoles().forEach(syncedRoleSet -> {
             List<Long> syncedRoleList = new ArrayList<>(syncedRoleSet.getRoles());
             if (syncedRoleList.contains(eventRole.getIdLong())) {
                 syncedRoleList.remove(eventRole.getIdLong());
@@ -87,7 +87,7 @@ public class RoleSyncHandler extends ListenerAdapter {
         User user = event.getUser();
         List<Guild> userGuilds = user.getMutualGuilds();
 
-        event.getRoles().forEach(eventRole -> novaBot.getSyncedRoles().forEach(syncedRoleSet -> {
+        event.getRoles().forEach(eventRole -> rolesService.getSyncedRoles().forEach(syncedRoleSet -> {
             List<Long> syncedRoleList = new ArrayList<>(syncedRoleSet.getRoles());
             if (syncedRoleList.contains(eventRole.getIdLong())) {
                 syncedRoleList.remove(eventRole.getIdLong());

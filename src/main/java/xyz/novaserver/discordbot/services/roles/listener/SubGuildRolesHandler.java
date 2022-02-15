@@ -1,4 +1,4 @@
-package xyz.novaserver.discordbot.listener;
+package xyz.novaserver.discordbot.services.roles.listener;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -9,22 +9,22 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.novaserver.discordbot.NovaBot;
-import xyz.novaserver.discordbot.config.GuildInfo;
-import xyz.novaserver.discordbot.config.SubGuildRoles;
+import xyz.novaserver.discordbot.services.RolesService;
+import xyz.novaserver.discordbot.services.roles.config.GuildInfo;
+import xyz.novaserver.discordbot.services.roles.config.SubGuildRoles;
 
 import java.util.List;
 
 public class SubGuildRolesHandler extends ListenerAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(SubGuildRolesHandler.class);
 
-    private final NovaBot novaBot;
+    private final RolesService rolesService;
     private final SubGuildRoles subGuildRoles;
     private GuildInfo mainGuildInfo;
 
-    public SubGuildRolesHandler(NovaBot novaBot) {
-        this.novaBot = novaBot;
-        this.subGuildRoles = novaBot.getSubGuildRoles();
+    public SubGuildRolesHandler(RolesService rolesService) {
+        this.rolesService = rolesService;
+        this.subGuildRoles = rolesService.getSubGuildRoles();
     }
 
     @Override
@@ -33,16 +33,16 @@ public class SubGuildRolesHandler extends ListenerAdapter {
         Member member = event.getMember();
         List<Guild> userGuilds = event.getUser().getMutualGuilds();
 
-        if (mainGuildInfo == null) mainGuildInfo = novaBot.getGuildInfo(subGuildRoles.getMainGuild());
+        if (mainGuildInfo == null) mainGuildInfo = rolesService.getGuildInfo(subGuildRoles.getMainGuild());
 
         // Check if member is joining main guild
         if (eventGuild.getIdLong() == mainGuildInfo.getGuildID()) {
             // Loop through guild -> role map
             subGuildRoles.getRoleMap().keySet().forEach(subGuildKey -> {
                 // Check if we have guild info for this guild
-                if (novaBot.hasGuildInfo(subGuildKey)) {
+                if (rolesService.hasGuildInfo(subGuildKey)) {
                     // Grab guild with it's id
-                    Guild subGuild = event.getJDA().getGuildById(novaBot.getGuildInfo(subGuildKey).getGuildID());
+                    Guild subGuild = event.getJDA().getGuildById(rolesService.getGuildInfo(subGuildKey).getGuildID());
                     // Give user mapped role if they are in this sub guild
                     if (userGuilds.contains(subGuild)) {
                         Role subGuildRole = eventGuild.getRoleById(subGuildRoles.getRoleMap().get(subGuildKey));
@@ -62,9 +62,9 @@ public class SubGuildRolesHandler extends ListenerAdapter {
                 // Loop through guild -> role map
                 subGuildRoles.getRoleMap().keySet().forEach(subGuildKey -> {
                     // Check if we have guild info for this guild
-                    if (novaBot.hasGuildInfo(subGuildKey)) {
+                    if (rolesService.hasGuildInfo(subGuildKey)) {
                         // Give user mapped role for joining sub guild
-                        if (eventGuild.getIdLong() == novaBot.getGuildInfo(subGuildKey).getGuildID()) {
+                        if (eventGuild.getIdLong() == rolesService.getGuildInfo(subGuildKey).getGuildID()) {
                             Role subGuildRole = mainGuild.getRoleById(subGuildRoles.getRoleMap().get(subGuildKey));
                             Member mainMember = mainGuild.getMember(event.getUser());
                             if (subGuildRole != null && mainMember != null) {
@@ -85,7 +85,7 @@ public class SubGuildRolesHandler extends ListenerAdapter {
         Member member = event.getMember();
         List<Guild> userGuilds = event.getUser().getMutualGuilds();
 
-        if (mainGuildInfo == null) mainGuildInfo = novaBot.getGuildInfo(subGuildRoles.getMainGuild());
+        if (mainGuildInfo == null) mainGuildInfo = rolesService.getGuildInfo(subGuildRoles.getMainGuild());
 
         Guild mainGuild = event.getJDA().getGuildById(mainGuildInfo.getGuildID());
 
@@ -94,9 +94,9 @@ public class SubGuildRolesHandler extends ListenerAdapter {
             // Loop through guild -> role map
             subGuildRoles.getRoleMap().keySet().forEach(subGuildKey -> {
                 // Check if we have guild info for this guild
-                if (novaBot.hasGuildInfo(subGuildKey)) {
+                if (rolesService.hasGuildInfo(subGuildKey)) {
                     // Removed user mapped role for leaving sub guild
-                    if (eventGuild.getIdLong() == novaBot.getGuildInfo(subGuildKey).getGuildID()) {
+                    if (eventGuild.getIdLong() == rolesService.getGuildInfo(subGuildKey).getGuildID()) {
                         Role subGuildRole = mainGuild.getRoleById(subGuildRoles.getRoleMap().get(subGuildKey));
                         Member mainMember = mainGuild.getMember(event.getUser());
                         if (subGuildRole != null && mainMember != null) {
