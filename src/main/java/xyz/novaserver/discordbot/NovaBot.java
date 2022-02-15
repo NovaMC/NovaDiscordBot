@@ -75,7 +75,6 @@ public class NovaBot implements EventListener {
             Reflections reflections = new Reflections("xyz.novaserver.discordbot.services");
             Set<Class<? extends Service>> subTypes = reflections.getSubTypesOf(Service.class);
             for (Class<? extends Service> clazz : subTypes) {
-                if (clazz.getSimpleName().equals("Service")) continue;
                 String serviceName = clazz.getSimpleName().toLowerCase().replace("service", "");
                 if (getConfig().node("enable-features", serviceName).getBoolean()) {
                     serviceMap.put(serviceName, clazz.getDeclaredConstructor(NovaBot.class).newInstance(this));
