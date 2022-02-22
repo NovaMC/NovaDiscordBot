@@ -30,7 +30,7 @@ public class SubGuildRolesHandler extends ListenerAdapter {
     @Override
     public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
         Guild eventGuild = event.getGuild();
-        Member member = event.getMember();
+        Member eventMember = event.getMember();
         List<Guild> userGuilds = event.getUser().getMutualGuilds();
 
         if (mainGuildInfo == null) mainGuildInfo = rolesService.getGuildInfo(subGuildRoles.getMainGuild());
@@ -46,9 +46,9 @@ public class SubGuildRolesHandler extends ListenerAdapter {
                     // Give user mapped role if they are in this sub guild
                     if (userGuilds.contains(subGuild)) {
                         Role subGuildRole = eventGuild.getRoleById(subGuildRoles.getRoleMap().get(subGuildKey));
-                        if (subGuildRole != null) {
-                            eventGuild.addRoleToMember(member, subGuildRole).queue();
-                            LOGGER.info("Added subserver role to member because they joined main server! M:" + member.getEffectiveName()
+                        if (subGuildRole != null && !eventMember.getRoles().contains(subGuildRole)) {
+                            eventGuild.addRoleToMember(eventMember, subGuildRole).queue();
+                            LOGGER.info("Added subserver role to member because they joined main server! M:" + eventMember.getEffectiveName()
                                     + " R:" + subGuildRole.getName() + " S:" + (subGuild != null ? subGuild.getName() : "null"));
                         }
                     }
@@ -67,7 +67,7 @@ public class SubGuildRolesHandler extends ListenerAdapter {
                         if (eventGuild.getIdLong() == rolesService.getGuildInfo(subGuildKey).getGuildID()) {
                             Role subGuildRole = mainGuild.getRoleById(subGuildRoles.getRoleMap().get(subGuildKey));
                             Member mainMember = mainGuild.getMember(event.getUser());
-                            if (subGuildRole != null && mainMember != null) {
+                            if (subGuildRole != null && mainMember != null && !mainMember.getRoles().contains(subGuildRole)) {
                                 mainGuild.addRoleToMember(mainMember, subGuildRole).queue();
                                 LOGGER.info("Added role to member because they joined subserver! M:" + mainMember.getEffectiveName()
                                         + " R:" + subGuildRole.getName() + " S:" + subGuildKey);
@@ -82,7 +82,6 @@ public class SubGuildRolesHandler extends ListenerAdapter {
     @Override
     public void onGuildMemberRemove(@NotNull GuildMemberRemoveEvent event) {
         Guild eventGuild = event.getGuild();
-        Member member = event.getMember();
         List<Guild> userGuilds = event.getUser().getMutualGuilds();
 
         if (mainGuildInfo == null) mainGuildInfo = rolesService.getGuildInfo(subGuildRoles.getMainGuild());
@@ -99,7 +98,7 @@ public class SubGuildRolesHandler extends ListenerAdapter {
                     if (eventGuild.getIdLong() == rolesService.getGuildInfo(subGuildKey).getGuildID()) {
                         Role subGuildRole = mainGuild.getRoleById(subGuildRoles.getRoleMap().get(subGuildKey));
                         Member mainMember = mainGuild.getMember(event.getUser());
-                        if (subGuildRole != null && mainMember != null) {
+                        if (subGuildRole != null && mainMember != null && mainMember.getRoles().contains(subGuildRole)) {
                             mainGuild.removeRoleFromMember(mainMember, subGuildRole).queue();
                             LOGGER.info("Removed role to member because they left subserver! M:" + mainMember.getEffectiveName()
                                     + " R:" + subGuildRole.getName() + " S:" + subGuildKey);

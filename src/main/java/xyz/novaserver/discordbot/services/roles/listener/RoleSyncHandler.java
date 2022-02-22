@@ -30,8 +30,10 @@ public class RoleSyncHandler extends ListenerAdapter {
     @Override
     public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
         Guild eventGuild = event.getGuild();
-        User user = event.getUser();
-        List<Guild> userGuilds = new ArrayList<>(user.getMutualGuilds());
+        User eventUser = event.getUser();
+        Member eventMember = event.getMember();
+
+        List<Guild> userGuilds = new ArrayList<>(eventUser.getMutualGuilds());
         Set<String> hasRoleKeys = new HashSet<>();
 
         userGuilds.remove(eventGuild);
@@ -49,9 +51,9 @@ public class RoleSyncHandler extends ListenerAdapter {
             if (hasRoleKeys.contains(syncedRoleSet.getRoleKey())) {
                 syncedRoleSet.getRoles().forEach(roleID -> {
                     Role role = event.getJDA().getRoleById(roleID);
-                    if (role != null && eventGuild.getRoles().contains(role)) {
-                        eventGuild.addRoleToMember(event.getMember(), role).queue();
-                        LOGGER.info("(Join) Synced member's role across server! M:" + event.getMember().getEffectiveName()
+                    if (role != null && eventGuild.getRoles().contains(role) && !eventMember.getRoles().contains(role)) {
+                        eventGuild.addRoleToMember(eventMember, role).queue();
+                        LOGGER.info("(Join) Synced member's role across server! M:" + eventMember.getEffectiveName()
                                 + " R:" + role.getName() + " S:" + eventGuild.getName());
                     }
                 });
@@ -72,7 +74,7 @@ public class RoleSyncHandler extends ListenerAdapter {
                     Role otherRole = event.getJDA().getRoleById(otherRoleID);
                     Guild otherGuild = otherRole != null ? otherRole.getGuild() : null;
                     Member otherMember = otherGuild != null ? otherGuild.getMember(user) : null;
-                    if (otherRole != null && otherMember != null && userGuilds.contains(otherGuild)) {
+                    if (otherRole != null && otherMember != null && userGuilds.contains(otherGuild) && !otherMember.getRoles().contains(otherRole)) {
                         otherGuild.addRoleToMember(otherMember, otherRole).queue();
                         LOGGER.info("(Add) Synced member's role across server! M:" + otherMember.getEffectiveName()
                                 + " R:" + otherRole.getName() + " S:" + otherGuild.getName());
@@ -95,7 +97,7 @@ public class RoleSyncHandler extends ListenerAdapter {
                     Role otherRole = event.getJDA().getRoleById(otherRoleID);
                     Guild otherGuild = otherRole != null ? otherRole.getGuild() : null;
                     Member otherMember = otherGuild != null ? otherGuild.getMember(user) : null;
-                    if (otherRole != null && otherMember != null && userGuilds.contains(otherGuild)) {
+                    if (otherRole != null && otherMember != null && userGuilds.contains(otherGuild) && otherMember.getRoles().contains(otherRole)) {
                         otherGuild.removeRoleFromMember(otherMember, otherRole).queue();
                         LOGGER.info("(Remove) Synced member's role across server! M:" + otherMember.getEffectiveName()
                                 + " R:" + otherRole.getName() + " S:" + otherGuild.getName());
