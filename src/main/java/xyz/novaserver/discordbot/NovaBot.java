@@ -1,5 +1,7 @@
 package xyz.novaserver.discordbot;
 
+import com.google.common.base.CaseFormat;
+import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -11,12 +13,12 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.jetbrains.annotations.NotNull;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.configurate.ConfigurationNode;
 import xyz.novaserver.discordbot.services.Service;
 import xyz.novaserver.discordbot.util.Config;
+import xyz.novaserver.discordbot.util.ReflectionUtil;
 
 import javax.security.auth.login.LoginException;
 import java.io.File;
@@ -53,6 +55,8 @@ public class NovaBot implements EventListener {
         this.CONFIG = config;
         this.threadPool = Executors.newScheduledThreadPool(5);
 
+        EventWaiter waiter = new EventWaiter();
+
         // Login and register bot
         JDA tempJda;
         try {
@@ -62,7 +66,7 @@ public class NovaBot implements EventListener {
                     .enableIntents(GatewayIntent.GUILD_MEMBERS)
                     .setStatus(OnlineStatus.DO_NOT_DISTURB)
                     .setActivity(Activity.playing("Starting up..."))
-                    .addEventListeners(this)
+                    .addEventListeners(this, waiter)
                     .build();
         } catch (LoginException e) {
             tempJda = null;
@@ -72,10 +76,9 @@ public class NovaBot implements EventListener {
 
         // Load services
         try {
-            Reflections reflections = new Reflections("xyz.novaserver.discordbot.services");
-            Set<Class<? extends Service>> subTypes = reflections.getSubTypesOf(Service.class);
+            Set<Class<? extends Service>> subTypes = ReflectionUtil.getTypes("xyz.novaserver.discordbot.services", Service.class);
             for (Class<? extends Service> clazz : subTypes) {
-                String serviceName = clazz.getSimpleName().toLowerCase().replace("service", "");
+                String serviceName = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_HYPHEN, clazz.getSimpleName().replace("Service", ""));
                 if (getConfig().node("enable-features", serviceName).getBoolean()) {
                     serviceMap.put(serviceName, clazz.getDeclaredConstructor(NovaBot.class).newInstance(this));
                 }
